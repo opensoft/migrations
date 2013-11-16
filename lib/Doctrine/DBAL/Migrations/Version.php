@@ -20,6 +20,7 @@
 namespace Doctrine\DBAL\Migrations;
 
 use Doctrine\DBAL\Migrations\Configuration\Configuration;
+use Doctrine\DBAL\Schema\Schema;
 
 /**
  * Class which wraps a migration version and allows execution of the
@@ -238,7 +239,12 @@ class Version
             $start = microtime(true);
 
             $this->state = self::STATE_PRE;
-            $fromSchema = $this->sm->createSchema();
+
+            // Remove the schema parse that happens between each migration.  This makes the passed in Schema object to
+            // the migration's up and down functions completely useless.  But you gain a huge speed improvement for very
+            // large databases with lots of tables.
+            // $fromSchema = $this->sm->createSchema();
+            $fromSchema = new Schema();
             $this->migration->{'pre' . ucfirst($direction)}($fromSchema);
 
             if ($direction === 'up') {
